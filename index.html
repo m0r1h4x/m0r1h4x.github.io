@@ -1,0 +1,60 @@
+---
+layout: default
+description: "mori: bug hunter and AI builder. The public log of one climb, from $0 to Diamond, hunting the logic bugs scanners miss."
+---
+{%- include rank/compute.html -%}
+{%- assign work_items = site.work | sort: "order" -%}
+{%- assign first_line = site.data.method.lines.first -%}
+<section class="hero" data-hero data-lines='{{ site.data.method.lines | jsonify | escape }}' data-stream='{{ site.data.method.stream | jsonify | escape }}'>
+  <canvas class="scene" data-scene aria-hidden="true"></canvas>
+  <div class="hero-in">
+    <h1 class="sr-only">{{ site.data.info.name }}, {{ site.data.info.tagline }}</h1>
+    <p class="say" data-say aria-hidden="true">{% for l in first_line %}<span>{{ l }}</span>{% endfor %}</p>
+    <p class="hero-who">I'm mori, a self taught bug hunter and AI builder. This is the public log of one climb, from $0 to Diamond.</p>
+    <p class="hero-go"><a class="btn" href="{{ '/journey/' | relative_url }}">Follow the climb</a><a class="btn btn-quiet" href="{{ site.posts.last.url | relative_url }}">Read day zero</a></p>
+  </div>
+  <dl class="readout tier-{{ rank_current.id }}">
+    <div><dt>rank</dt><dd class="readout-rank">{{ rank_current.name | downcase }}</dd></div>
+    <div><dt>earned</dt><dd>{% include money.html amount=rank_earned %}</dd></div>
+    <div><dt>valid reports</dt><dd>{{ site.data.info.valid_reports }}</dd></div>
+    <div><dt>day</dt><dd data-day data-started="{{ site.data.info.started | date: '%Y-%m-%d' }}">{{ rank_day }}</dd></div>
+  </dl>
+</section>
+
+<div class="page page-home">
+  <section class="block" aria-labelledby="h-latest">
+    <header class="block-head"><h2 id="h-latest">Latest from the log</h2><a href="{{ '/posts/' | relative_url }}">All posts</a></header>
+    {%- if site.posts.size > 0 %}
+    <ul class="entries">
+      {%- for p in site.posts limit: 5 %}{% include entry.html post=p %}{% endfor %}
+    </ul>
+    {%- else %}
+    <p class="empty">Nothing written yet. The first entry lands on day zero.</p>
+    {%- endif %}
+  </section>
+
+  <section class="block" aria-labelledby="h-build">
+    <header class="block-head"><h2 id="h-build">What I'm building</h2><a href="{{ '/work/' | relative_url }}">All work</a></header>
+    <div class="builds">
+      {%- for w in work_items %}
+      <a class="build" href="{{ w.url | relative_url }}">
+        <span class="state">{{ w.status | default: "building" }}</span>
+        <h3>{{ w.title }}</h3>
+        <p>{{ w.description }}</p>
+        {%- if w.stages %}
+        <ol class="stages">{% for s in w.stages %}<li>{{ s }}</li>{% endfor %}</ol>
+        {%- endif %}
+      </a>
+      {%- endfor %}
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-rules">
+    <header class="block-head"><h2 id="h-rules">Rules I hunt by</h2><a href="{{ '/about/' | relative_url }}#method">The full method</a></header>
+    <ol class="rules">
+      {%- for r in site.data.method.rules %}
+      <li>{{ r }}</li>
+      {%- endfor %}
+    </ol>
+  </section>
+</div>

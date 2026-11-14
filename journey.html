@@ -1,0 +1,91 @@
+---
+layout: default
+title: Journey
+description: "The rank ladder, the bounty log, and every milestone. Ranks unlock only when a bounty pays."
+permalink: /journey/
+---
+{%- include rank/compute.html -%}
+{%- assign b_all = site.data.bounties.entries | sort: "date" | reverse -%}
+{%- assign tiers_down = rank_tiers | reverse -%}
+<div class="page">
+  <header class="page-head">
+    <h1 class="title" data-scramble>Journey</h1>
+    <p class="lede">Ranks are money only. A tier unlocks when a bounty pays, and never before.</p>
+  </header>
+
+  <dl class="totals tier-{{ rank_current.id }}">
+    <div><dt>rank</dt><dd class="readout-rank">{{ rank_current.name | downcase }}</dd></div>
+    <div><dt>earned</dt><dd>{% include money.html amount=rank_earned %}</dd></div>
+    <div><dt>valid reports</dt><dd>{{ site.data.info.valid_reports }}</dd></div>
+    <div><dt>day</dt><dd data-day data-started="{{ site.data.info.started | date: '%Y-%m-%d' }}">{{ rank_day }}</dd></div>
+  </dl>
+
+  <section class="block" aria-labelledby="h-ladder">
+    <header class="block-head"><h2 id="h-ladder">The ladder</h2><span>{% if rank_next %}{% include money.html amount=rank_to_go %} to {{ rank_next.name | downcase }}{% else %}top of the ladder{% endif %}</span></header>
+    <div class="climb" aria-hidden="true">
+      {%- for t in rank_tiers %}
+        {%- assign t_min = t.min | plus: 0 -%}
+        {%- assign cls = "is-locked" -%}
+        {%- if rank_earned >= t_min -%}{%- assign cls = "is-done" -%}{%- endif -%}
+        {%- if t.id == rank_current.id -%}{%- assign cls = "is-here" -%}{%- endif -%}
+        {%- if t_min >= 1000 -%}{%- capture t_short -%}${{ t_min | divided_by: 1000 }}k{%- endcapture -%}{%- else -%}{%- capture t_short -%}${{ t_min }}{%- endcapture -%}{%- endif %}
+      <div class="step tier-{{ t.id }} {{ cls }}">
+        <p class="step-label"><span class="step-name">{{ t.name | downcase }}</span><span>{{ t_short }}</span>{% if t.id == rank_current.id %}<span class="step-you">you</span>{% endif %}</p>
+      </div>
+      {%- endfor %}
+    </div>
+    <ol class="ladder" reversed>
+      {%- for t in tiers_down %}
+        {%- assign t_min = t.min | plus: 0 -%}
+        {%- assign cls = "is-locked" -%}
+        {%- if rank_earned >= t_min -%}{%- assign cls = "is-done" -%}{%- endif -%}
+        {%- if t.id == rank_current.id -%}{%- assign cls = "is-here" -%}{%- endif %}
+      <li class="rung tier-{{ t.id }} {{ cls }}">
+        <span class="rung-fill" aria-hidden="true"></span>
+        <span class="rung-name">{{ t.name }}</span>
+        <span class="rung-min">{% if t.unlock_label %}{{ t.unlock_label }}{% else %}{% include money.html amount=t.min %}{% endif %}</span>
+        <span class="rung-motto">{{ t.motto }}</span>
+        {%- if t.id == rank_current.id %}<span class="rung-here">you are here, day <span data-day data-started="{{ site.data.info.started | date: '%Y-%m-%d' }}">{{ rank_day }}</span></span>{% endif %}
+      </li>
+      {%- endfor %}
+    </ol>
+  </section>
+
+  <section class="block" id="bounties" aria-labelledby="h-bounties">
+    <header class="block-head"><h2 id="h-bounties">Bounty log</h2><span>{{ b_all.size }} entries, {% include money.html amount=rank_earned %} paid</span></header>
+    {%- if b_all.size > 0 %}
+    <ul class="bounties">
+      {%- for e in b_all %}
+      <li class="bounty sev-{{ e.severity }}" id="bounty-{{ e.id }}">
+        <time datetime="{{ e.date | date: '%Y-%m-%d' }}">{{ e.date | date: "%Y.%m.%d" }}</time>
+        <span class="bounty-title">{% if e.writeup %}<a href="{{ e.writeup }}" rel="noopener">{{ e.title }}</a>{% else %}{{ e.title }}{% endif %}{% if e.notes %}<small>{{ e.notes }}</small>{% endif %}</span>
+        <span class="bounty-meta"><span class="sev">{{ e.severity }}</span>{% if e.program %}<span>{{ e.program }}</span>{% else %}<span>{{ e.platform }}</span>{% endif %}</span>
+        <span class="bounty-amount">{% include money.html amount=e.amount %}</span>
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- else %}
+    <div class="waiting">
+      <p><span class="prompt" aria-hidden="true">$</span> tail bounties.log</p>
+      <p class="waiting-out">0 entries. Waiting for the first valid report<span class="mark-caret" aria-hidden="true"></span></p>
+    </div>
+    {%- endif %}
+  </section>
+
+  <section class="block" aria-labelledby="h-miles">
+    <header class="block-head"><h2 id="h-miles">Milestones</h2></header>
+    <ol class="miles">
+      {%- for p in site.posts -%}
+      {%- if p.format == "journey" or p.rank_up -%}
+        {%- assign ru = nil -%}
+        {%- if p.rank_up -%}{%- assign ru = site.data.ranks.tiers | where: "id", p.rank_up | first -%}{%- endif %}
+      <li class="mile{% if ru %} tier-{{ ru.id }}{% endif %}">
+        <time datetime="{{ p.date | date_to_xmlschema }}">{{ p.date | date: "%Y.%m.%d" }}</time>
+        <a href="{{ p.url | relative_url }}">{{ p.title }}</a>
+        {%- if ru %}<span class="mile-rank">{% if ru.min == 0 %}start at {{ ru.name | downcase }}{% else %}rank up to {{ ru.name | downcase }}{% endif %}</span>{% endif %}
+      </li>
+      {%- endif -%}
+      {%- endfor %}
+    </ol>
+  </section>
+</div>

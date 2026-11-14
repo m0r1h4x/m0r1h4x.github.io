@@ -1,0 +1,24 @@
+{%- assign rank_earned = site.data.info.bounty_earned | default: 0 | plus: 0 -%}
+{%- assign rank_tiers = site.data.ranks.tiers -%}
+{%- assign rank_current = rank_tiers.first -%}
+{%- assign rank_index = 0 -%}
+{%- for t in rank_tiers -%}
+  {%- assign t_min = t.min | plus: 0 -%}
+  {%- if rank_earned >= t_min -%}{%- assign rank_current = t -%}{%- assign rank_index = forloop.index0 -%}{%- endif -%}
+{%- endfor -%}
+{%- assign rank_next_index = rank_index | plus: 1 -%}
+{%- assign rank_next = rank_tiers[rank_next_index] -%}
+{%- assign rank_goal = rank_tiers.last.min | plus: 0 -%}
+{%- assign rank_goal_pct = rank_earned | times: 100.0 | divided_by: rank_goal | at_most: 100 | round: 1 -%}
+{%- if rank_next -%}
+  {%- assign rank_span = rank_next.min | minus: rank_current.min -%}
+  {%- assign rank_into = rank_earned | minus: rank_current.min -%}
+  {%- assign rank_to_go = rank_next.min | minus: rank_earned -%}
+  {%- assign rank_pct = rank_into | times: 100 | divided_by: rank_span -%}
+{%- else -%}
+  {%- assign rank_span = 1 -%}{%- assign rank_into = 1 -%}{%- assign rank_to_go = 0 -%}{%- assign rank_pct = 100 -%}
+{%- endif -%}
+{%- assign rank_start_s = site.data.info.started | date: "%s" | plus: 0 -%}
+{%- assign rank_now_s = site.time | date: "%s" | plus: 0 -%}
+{%- assign rank_day = rank_now_s | minus: rank_start_s | divided_by: 86400 | at_least: 0 -%}
+{%- assign rank_reports = site.data.info.valid_reports | default: 0 | plus: 0 -%}

@@ -1,0 +1,4 @@
+{%- assign _n = include.amount | default: 0 | plus: 0 | round -%}
+{%- assign _d = _n | append: "" | split: "" | reverse -%}
+{%- capture _r -%}{%- for c in _d -%}{%- assign _m = forloop.index0 | modulo: 3 -%}{%- if forloop.index0 > 0 and _m == 0 -%},{%- endif -%}{{ c }}{%- endfor -%}{%- endcapture -%}
+${{ _r | split: "" | reverse | join: "" -}}

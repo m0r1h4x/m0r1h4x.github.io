@@ -1,0 +1,45 @@
+---
+layout: default
+title: Posts
+description: "Writeups, videos, notes and journey entries on web and API security and AI security agents."
+permalink: /posts/
+---
+<div class="page">
+  <header class="page-head">
+    <h1 class="title" data-scramble>Posts</h1>
+    <p class="lede">Writeups, videos, notes and the journey log. Each entry carries the rank I held the day I wrote it, so the archive doubles as a record of the climb.</p>
+  </header>
+
+  {%- if site.posts.size > 1 %}
+  <div class="filters" role="group" aria-label="Filter posts" data-filters hidden>
+    <button type="button" class="chip" data-filter="all" data-value="" aria-pressed="true">all</button>
+    {%- for f in site.data.topics.formats -%}
+      {%- assign f_posts = site.posts | where: "format", f.id -%}
+      {%- if f_posts.size > 0 %}
+    <button type="button" class="chip" data-filter="format" data-value="{{ f.id }}" aria-pressed="false">{{ f.label | downcase }}</button>
+      {%- endif -%}
+    {%- endfor -%}
+    {%- for t in site.data.topics.topics -%}
+      {%- assign t_posts = site.posts | where_exp: "p", "p.topics contains t.id" -%}
+      {%- if t_posts.size > 0 %}
+    <button type="button" class="chip" data-filter="topic" data-value="{{ t.id }}" aria-pressed="false">{{ t.label | downcase }}</button>
+      {%- endif -%}
+    {%- endfor %}
+  </div>
+  {%- endif %}
+
+  {%- if site.posts.size > 0 %}
+  {%- assign by_year = site.posts | group_by_exp: "p", "p.date | date: '%Y'" -%}
+  {%- for y in by_year %}
+  <section class="block year" aria-labelledby="y-{{ y.name }}">
+    <header class="block-head"><h2 id="y-{{ y.name }}">{{ y.name }}</h2><span>{{ y.items.size }} {% if y.items.size == 1 %}entry{% else %}entries{% endif %}</span></header>
+    <ul class="entries">
+      {%- for p in y.items %}{% include entry.html post=p %}{% endfor %}
+    </ul>
+  </section>
+  {%- endfor %}
+  <p class="empty" data-none hidden>No posts match that filter. Pick another or show all.</p>
+  {%- else %}
+  <p class="empty">Nothing written yet. The first entry lands on day zero.</p>
+  {%- endif %}
+</div>

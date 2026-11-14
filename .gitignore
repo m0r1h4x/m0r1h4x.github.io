@@ -1,0 +1,7 @@
+_site/
+vendor/
+.bundle/
+.jekyll-cache/
+.remember/
+lain.png
+bluelain.png

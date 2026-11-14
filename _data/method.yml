@@ -1,0 +1,39 @@
+lines:
+  - ["i hunt where", "scanners are", "blind."]
+  - ["from $0", "to diamond,", "in public."]
+  - ["the agents do", "the boring part.", "i do the thinking."]
+steps:
+  - name: "Map it first"
+    items:
+      - "Every role I can get an account for."
+      - "Every object that has an owner."
+      - "Every workflow that has an order."
+  - name: "Then ask"
+    items:
+      - "Who checks that this object is mine?"
+      - "What happens if I skip a step?"
+      - "What happens if I do a step twice?"
+      - "Where does the server trust what I send?"
+  - name: "Then prove it"
+    items:
+      - "Two accounts, one browser each."
+      - "Reproduce three times before writing a word."
+      - "Impact in one sentence, steps anyone can follow."
+rules:
+  - "Scanners find what everyone finds."
+  - "Logic bugs live between the endpoints."
+  - "The agents do the boring part, I do the thinking."
+  - "The rank only moves when a report pays."
+stream:
+  - "GET /api/v2/users/1338/invoices"
+  - "owner: 1337 != 1338"
+  - "POST /orders/5521/refund x2"
+  - "PATCH /teams/77/members role=owner"
+  - "recon 214 endpoints, 37 take an id"
+  - "state: created > paid > shipped > refunded"
+  - "reproduced 3/3"
+  - "role: guest member manager owner"
+  - "trust boundary: body.role"
+  - "GET /admin/export?team=12"
+  - "$0 > $1 > $1k > $10k > $50k > $100k"
+  - "eyJhbGciOiJIUzI1NiJ9"

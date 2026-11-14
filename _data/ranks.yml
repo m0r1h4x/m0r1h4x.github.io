@@ -1,0 +1,39 @@
+tiers:
+  - id: unranked
+    name: Unranked
+    min: 0
+    color: "#9aa4ae"
+    icon: unranked
+    motto: "Day zero. Every hunter starts here."
+    unlock_label: "Start"
+  - id: bronze
+    name: Bronze
+    min: 1
+    color: "#d08a4a"
+    icon: bronze
+    motto: "First blood. It pays."
+    unlock_label: "First paid bounty"
+  - id: silver
+    name: Silver
+    min: 1000
+    color: "#c3cad3"
+    icon: silver
+    motto: "Signal over noise."
+  - id: gold
+    name: Gold
+    min: 10000
+    color: "#f5c542"
+    icon: gold
+    motto: "Logic beats scanners."
+  - id: platinum
+    name: Platinum
+    min: 50000
+    color: "#5eead4"
+    icon: platinum
+    motto: "The agents hunt too."
+  - id: diamond
+    name: Diamond
+    min: 100000
+    color: "#a78bfa"
+    icon: diamond
+    motto: "The goal."

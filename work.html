@@ -1,0 +1,57 @@
+---
+layout: default
+title: Work
+description: "What mori builds, knows and is learning: hunt agents, Burp extensions, skills and the proof behind them."
+permalink: /work/
+---
+{%- include rank/compute.html -%}
+{%- assign work_items = site.work | sort: "order" -%}
+<div class="page">
+  <header class="page-head">
+    <h1 class="title" data-scramble>Work</h1>
+    <p class="lede">What I build, what I know and what I'm learning. The agents and extensions are part of the hunt, built so it scales past one pair of hands.</p>
+  </header>
+
+  <section class="block" aria-labelledby="h-building">
+    <header class="block-head"><h2 id="h-building">Building</h2></header>
+    <div class="builds">
+      {%- for w in work_items %}
+      <a class="build" href="{{ w.url | relative_url }}">
+        <span class="state">{{ w.status | default: "building" }}</span>
+        <h3>{{ w.title }}</h3>
+        <p>{{ w.description }}</p>
+        {%- if w.stages %}
+        <ol class="stages">{% for s in w.stages %}<li>{{ s }}</li>{% endfor %}</ol>
+        {%- endif %}
+      </a>
+      {%- endfor %}
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-skills">
+    <header class="block-head"><h2 id="h-skills">Skills</h2></header>
+    <dl class="notes">
+      {%- for s in site.data.info.skills %}
+      <div><dt>{{ s.name }}</dt><dd>{{ s.note }}</dd></div>
+      {%- endfor %}
+    </dl>
+  </section>
+
+  <section class="block" aria-labelledby="h-learning">
+    <header class="block-head"><h2 id="h-learning">Learning</h2></header>
+    <dl class="notes">
+      {%- for s in site.data.info.learning %}
+      <div><dt>{{ s.name }}</dt><dd>{{ s.note }}</dd></div>
+      {%- endfor %}
+    </dl>
+  </section>
+
+  <section class="block" aria-labelledby="h-focus">
+    <header class="block-head"><h2 id="h-focus">Focus</h2></header>
+    <ul class="tags">
+      {%- for f in site.data.info.focus %}
+      <li>{{ f | downcase }}</li>
+      {%- endfor %}
+    </ul>
+  </section>
+</div>

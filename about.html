@@ -1,0 +1,52 @@
+---
+layout: default
+title: About
+description: "mori: 100% self taught bug hunter starting from $0, building AI agents that hunt with me."
+permalink: /about/
+---
+<div class="page">
+  <header class="page-head">
+    <h1 class="title" data-scramble>About</h1>
+    <p class="lede">I'm mori. 100% self taught, starting from $0: no degree, no certifications, no paid bounties yet.</p>
+  </header>
+
+  <div class="prose">
+    <p>This site is the public log of that climb, from zero to an agentic bug hunter. I hunt by hand where scanners are blind: business logic, access control, IDOR and privilege escalation. I map how an app really works (roles, state transitions, trust boundaries) and chain what breaks.</p>
+    <p>In parallel I build AI agents and Burp extensions that do the same, so the hunt scales. They are not a side project. They are part of how I plan to get there.</p>
+    <p>Outside security: {{ site.data.info.interests | join: ", " }}.</p>
+  </div>
+
+  <section class="block" id="method" aria-labelledby="h-method">
+    <header class="block-head"><h2 id="h-method">How I hunt</h2></header>
+    <ol class="method">
+      {%- for s in site.data.method.steps %}
+      <li>
+        <h3>{{ s.name }}</h3>
+        <ul>{% for i in s.items %}<li>{{ i }}</li>{% endfor %}</ul>
+      </li>
+      {%- endfor %}
+    </ol>
+  </section>
+
+  <section class="block" aria-labelledby="h-rules">
+    <header class="block-head"><h2 id="h-rules">Rules</h2></header>
+    <ol class="rules">
+      {%- for r in site.data.method.rules %}
+      <li>{{ r }}</li>
+      {%- endfor %}
+    </ol>
+  </section>
+
+  <section class="block" aria-labelledby="h-find">
+    <header class="block-head"><h2 id="h-find">Find me</h2></header>
+    <ul class="tags tags-links">
+      {%- for s in site.data.info.social -%}
+        {%- assign key = s[0] -%}
+        {%- assign net = site.data.social[key] -%}
+        {%- if net and net.url %}
+      <li><a href="{{ net.url | replace: '%s', s[1] }}" rel="me noopener">{{ net.label }}</a></li>
+        {%- endif -%}
+      {%- endfor %}
+    </ul>
+  </section>
+</div>

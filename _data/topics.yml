@@ -1,0 +1,15 @@
+formats:
+  - { id: writeup, label: "Writeups" }
+  - { id: video,   label: "Videos" }
+  - { id: notes,   label: "Notes" }
+  - { id: journey, label: "Journey" }
+topics:
+  - { id: idor,           label: "IDOR" }
+  - { id: access-control, label: "Access control" }
+  - { id: business-logic, label: "Business logic" }
+  - { id: privesc,        label: "Privilege escalation" }
+  - { id: auth,           label: "Auth" }
+  - { id: graphql,        label: "GraphQL" }
+  - { id: recon,          label: "Recon" }
+  - { id: ai-agents,      label: "AI agents" }
+  - { id: burp,           label: "Burp extensions" }

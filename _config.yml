@@ -1,0 +1,32 @@
+title: "mori"
+description: "Bug Hunter & AI Builder. Teaching agents to hunt the bugs scanners miss."
+url: "https://m0r1h4x.github.io"
+baseurl: ""
+lang: en
+permalink: /posts/:title/
+timezone: Africa/Cairo
+theme: null
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+collections:
+  work:
+    output: true
+    permalink: /work/:name/
+defaults:
+  - scope: { path: "", type: posts }
+    values: { layout: post, pinned: false }
+  - scope: { path: "", type: work }
+    values: { layout: work }
+  - scope: { path: "" }
+    values: { layout: default }
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .bundle
+  - .remember
+  - lain.png
+  - bluelain.png

@@ -1,0 +1,18 @@
+---
+layout: default
+---
+<article class="page post">
+  <header class="post-head">
+    <p class="post-meta"><a href="{{ '/work/' | relative_url }}">work</a><span class="state">{{ page.status | default: "building" }}</span></p>
+    <h1 class="title" data-scramble>{{ page.title }}</h1>
+    <p class="lede">{{ page.description }}</p>
+  </header>
+  <div class="prose">
+{{ content }}
+  </div>
+  <nav class="post-nav" aria-label="More work">
+    {%- assign others = site.work | sort: "order" -%}
+    {%- for w in others %}{% if w.url != page.url %}<a href="{{ w.url | relative_url }}"><span>Also building</span>{{ w.title }}</a>{% endif %}{% endfor %}
+    <a href="{{ '/work/' | relative_url }}"><span>Index</span>All work</a>
+  </nav>
+</article>

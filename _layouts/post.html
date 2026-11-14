@@ -1,0 +1,31 @@
+---
+layout: default
+---
+{%- include rank/at.html date=page.date -%}
+<article class="page post">
+  <header class="post-head">
+    <p class="post-meta"><time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y.%m.%d" }}</time><span>day {{ at_day }}</span><span class="tier-{{ at_rank.id }} entry-rank">written at {{ at_rank.name | downcase }}</span>{% if page.format %}<span>{{ page.format }}</span>{% endif %}</p>
+    <h1 class="title" data-scramble>{{ page.title }}</h1>
+    {%- if page.description %}<p class="lede">{{ page.description }}</p>{% endif %}
+    {%- if page.rank_up %}
+      {%- assign ru = site.data.ranks.tiers | where: "id", page.rank_up | first -%}
+      {%- if ru %}
+    <p class="rankup tier-{{ ru.id }}"><span class="swatch" aria-hidden="true"></span>{% if ru.min == 0 %}The climb starts here, at {{ ru.name }}.{% else %}Rank up: {{ ru.name }}. {{ ru.motto }}{% endif %}</p>
+      {%- endif %}
+    {%- endif %}
+  </header>
+  {%- if page.video %}
+  <a class="video" href="https://www.youtube.com/watch?v={{ page.video }}" rel="noopener">
+    <img src="https://i.ytimg.com/vi/{{ page.video }}/hqdefault.jpg" width="480" height="360" alt="Watch {{ page.title | escape }} on YouTube" loading="lazy">
+    <span>Watch on YouTube</span>
+  </a>
+  {%- endif %}
+  <div class="prose">
+{{ content }}
+  </div>
+  <nav class="post-nav" aria-label="More posts">
+    {%- if page.previous %}<a rel="prev" href="{{ page.previous.url | relative_url }}"><span>Earlier</span>{{ page.previous.title }}</a>{% endif %}
+    {%- if page.next %}<a rel="next" href="{{ page.next.url | relative_url }}"><span>Later</span>{{ page.next.title }}</a>{% endif %}
+    <a href="{{ '/posts/' | relative_url }}"><span>Archive</span>All posts</a>
+  </nav>
+</article>

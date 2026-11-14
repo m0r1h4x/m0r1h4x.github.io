@@ -1,0 +1,39 @@
+name: "mori"
+handle: "mori"
+tagline: "Bug Hunter & AI Builder. Teaching agents to hunt the bugs scanners miss."
+role: "Bug Hunter & AI Builder"
+started: 2026-10-10
+
+bounty_earned: 0
+valid_reports: 0
+
+focus:
+  - Web security
+  - API security
+  - Business logic
+  - Access control
+  - Security automation
+  - AI agents
+skills:
+  - name: "Black box testing"
+    note: "Web, APIs and mobile apps: business logic, access control and IDOR."
+  - name: "AI Builder"
+    note: "AI agents and Burp extensions that recon, hunt and validate bugs alongside me."
+learning:
+  - name: "Agent engineering"
+    note: "Claude Code, MCP, evals, memory and RAG."
+  - name: "AI red teaming"
+    note: "Prompt injection and attacking LLM apps and agents."
+  - name: "Machine learning"
+    note: "Neural networks and LLMs from scratch."
+interests:
+  - anime
+  - manga
+  - gaming
+
+social:
+  github: "m0r1h4x"
+  hackerone: "m0r1h4x"
+  x: "m0r1h4x"
+  linkedin: "m0r1h4x"
+  discord: "1304796429088456786"

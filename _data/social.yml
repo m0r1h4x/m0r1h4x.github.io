@@ -1,0 +1,5 @@
+github:    { label: "GitHub",    url: "https://github.com/%s" }
+hackerone: { label: "HackerOne", url: "https://hackerone.com/%s" }
+x:         { label: "X",         url: "https://x.com/%s" }
+linkedin:  { label: "LinkedIn",  url: "https://www.linkedin.com/in/%s" }
+discord:   { label: "Discord",   url: "https://discord.com/users/%s" }

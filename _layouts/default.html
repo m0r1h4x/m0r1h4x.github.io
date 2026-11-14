@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="{{ site.lang }}">
+<head>
+{% include head.html %}
+</head>
+<body>
+{% include header.html %}
+<div class="progress" data-progress aria-hidden="true"></div>
+<main id="view" tabindex="-1" data-path="{{ page.url }}">
+{{ content }}
+</main>
+{% include footer.html %}
+<canvas class="veil" data-veil aria-hidden="true"></canvas>
+<p class="veil-label" data-veil-label aria-hidden="true"></p>
+<script src="{{ '/assets/js/site.js' | relative_url }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{%- assign at_stamp = include.date | date: "%Y%m%d" | plus: 0 -%}
+{%- assign at_earned = 0 -%}
+{%- for e in site.data.bounties.entries -%}
+  {%- assign e_stamp = e.date | date: "%Y%m%d" | plus: 0 -%}
+  {%- if e_stamp <= at_stamp -%}{%- assign at_earned = at_earned | plus: e.amount -%}{%- endif -%}
+{%- endfor -%}
+{%- assign at_rank = site.data.ranks.tiers.first -%}
+{%- for t in site.data.ranks.tiers -%}
+  {%- assign t_min = t.min | plus: 0 -%}
+  {%- if at_earned >= t_min -%}{%- assign at_rank = t -%}{%- endif -%}
+{%- endfor -%}
+{%- assign at_start_s = site.data.info.started | date: "%s" | plus: 0 -%}
+{%- assign at_date_s = include.date | date: "%s" | plus: 0 -%}
+{%- assign at_day = at_date_s | minus: at_start_s | divided_by: 86400 | at_least: 0 -%}

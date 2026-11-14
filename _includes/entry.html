@@ -1,0 +1,12 @@
+{%- assign p = include.post -%}
+{%- include rank/at.html date=p.date -%}
+<li class="entry" data-format="{{ p.format }}" data-topics="{{ p.topics | join: ' ' }}">
+  <a href="{{ p.url | relative_url }}">
+    <time datetime="{{ p.date | date_to_xmlschema }}">{{ p.date | date: "%Y.%m.%d" }}</time>
+    <span class="entry-body">
+      <span class="entry-title">{{ p.title }}</span>
+      <span class="entry-desc">{{ p.description }}</span>
+    </span>
+    <span class="entry-meta"><span class="tier-{{ at_rank.id }} entry-rank">{{ at_rank.name | downcase }}</span><span>day {{ at_day }}</span>{% if p.format %}<span>{{ p.format }}</span>{% endif %}</span>
+  </a>
+</li>

@@ -1,0 +1,40 @@
+{%- include rank/compute.html -%}
+<a class="skip" href="#view">Skip to content</a>
+<header class="top">
+  <a class="mark" href="{{ '/' | relative_url }}" aria-label="mori, home">mori<span class="mark-caret" aria-hidden="true"></span></a>
+  <nav class="nav" aria-label="Main">
+    <a href="{{ '/journey/' | relative_url }}" data-nav="/journey/">journey</a>
+    <a href="{{ '/posts/' | relative_url }}" data-nav="/posts/">posts</a>
+    <a href="{{ '/work/' | relative_url }}" data-nav="/work/">work</a>
+    <a href="{{ '/about/' | relative_url }}" data-nav="/about/">about</a>
+  </nav>
+  <a class="status tier-{{ rank_current.id }}" href="{{ '/journey/' | relative_url }}" title="The rank only moves when a report pays">
+    <span class="status-rank">{{ rank_current.name | downcase }}</span>
+    <span>{% include money.html amount=rank_earned %}</span>
+    <span class="status-day">day <span data-day data-started="{{ site.data.info.started | date: '%Y-%m-%d' }}">{{ rank_day }}</span></span>
+  </a>
+  <div class="layers" role="group" aria-label="Layer">
+    {%- for l in site.data.layers %}
+    <button type="button" class="chip-{{ l }}" data-set-layer="{{ l }}" aria-pressed="false" title="{{ l }} layer" aria-label="{{ l }} layer"></button>
+    {%- endfor %}
+  </div>
+  <button class="burger" type="button" data-menu-button aria-expanded="false" aria-controls="menu" aria-label="Open menu"><span aria-hidden="true"></span></button>
+</header>
+<div class="menu" id="menu" data-menu hidden>
+  <canvas class="menu-sky" data-menu-sky aria-hidden="true"></canvas>
+  <nav aria-label="Menu">
+    <ul class="menu-links">
+      <li><a href="{{ '/' | relative_url }}" data-menu-link="/">home</a></li>
+      <li><a href="{{ '/journey/' | relative_url }}" data-menu-link="/journey/">journey</a></li>
+      <li><a href="{{ '/posts/' | relative_url }}" data-menu-link="/posts/">posts</a></li>
+      <li><a href="{{ '/work/' | relative_url }}" data-menu-link="/work/">work</a></li>
+      <li><a href="{{ '/about/' | relative_url }}" data-menu-link="/about/">about</a></li>
+    </ul>
+  </nav>
+  <div class="menu-layers" role="group" aria-label="Layer">
+    {%- for l in site.data.layers %}
+    <button type="button" data-set-layer="{{ l }}" aria-pressed="false"><span class="chip-{{ l }}" aria-hidden="true"></span>{{ l }}</button>
+    {%- endfor %}
+  </div>
+  <p class="menu-status tier-{{ rank_current.id }}"><span class="status-rank">{{ rank_current.name | downcase }}</span><span>{% include money.html amount=rank_earned %}</span><span>day <span data-day data-started="{{ site.data.info.started | date: '%Y-%m-%d' }}">{{ rank_day }}</span></span></p>
+</div>
