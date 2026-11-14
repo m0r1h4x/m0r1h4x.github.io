@@ -585,7 +585,7 @@ main { flex: 1; }
 .rung.is-done .rung-fill, .rung.is-here .rung-fill { background: var(--tier); }
 .rung-name { font-size: 22px; color: var(--tier); }
 .rung-motto { font-family: var(--sans); font-size: 17px; color: var(--text); }
-.rung.is-locked .rung-name, .rung.is-locked .rung-motto { opacity: 0.6; }
+.rung.is-locked .rung-motto { color: var(--dim); }
 .rung.is-here { background: var(--bg-2); box-shadow: inset 4px 0 0 var(--hot); }
 .rung.is-here .rung-motto { color: var(--strong); }
 .rung-here { color: var(--hot); white-space: nowrap; }
@@ -805,14 +805,27 @@ main { flex: 1; }
 .lost { min-height: 60svh; display: flex; flex-direction: column; justify-content: center; }
 .lost .title { font-size: clamp(96px, 22vw, 240px); color: var(--plum-hi); }
 
-.skyline {
+.figure {
     display: block;
     width: 100%;
+    height: clamp(200px, 32vh, 310px);
+    margin-top: calc(-1 * clamp(56px, 10vh, 120px));
+    pointer-events: none;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+.skyline {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-top: -72px;
     height: 72px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
 }
-.foot-keys { width: 100%; color: var(--text); opacity: 0.75; }
+.foot-keys { width: 100%; color: var(--text); }
+.foot-keys button { margin-left: 10px; border-bottom: 1px solid currentColor; }
+.foot-keys button:hover { color: var(--hot); }
 .foot-keys kbd {
     display: inline-block;
     min-width: 22px;
@@ -941,7 +954,7 @@ main { flex: 1; }
     display: none;
 }
 .veil.is-on { display: block; }
-.is-booting .veil { display: block; background: var(--veil-bg); animation: unveil 0s 5s forwards; }
+.is-booting .veil { display: block; background: var(--bg); animation: unveil 0s 5s forwards; }
 
 .veil-label {
     position: fixed;
@@ -954,7 +967,7 @@ main { flex: 1; }
     pointer-events: none;
     font-family: var(--pixel);
     text-align: center;
-    color: var(--veil-ink);
+    color: var(--strong);
     opacity: 0;
 }
 .veil-label.is-on { opacity: 1; }

@@ -2,6 +2,7 @@
 layout: default
 ---
 {%- include rank/at.html date=page.date -%}
+<canvas class="banner" data-banner aria-hidden="true"></canvas>
 <article class="page post">
   <header class="post-head">
     <p class="post-meta"><time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y.%m.%d" }}</time><span>day {{ at_day }}</span><span class="tier-{{ at_rank.id }} entry-rank">written at {{ at_rank.name | downcase }}</span>{% if page.format %}<span>{{ page.format }}</span>{% endif %}</p>

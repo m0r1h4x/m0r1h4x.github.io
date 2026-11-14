@@ -445,7 +445,7 @@
         },
         paint: function (p) {
             var W = this.W, H = this.H, buf = this.buf, P = pal();
-            var base = P.veil, mid = P.veilMid, edge = P.veilEdge, reach = p * 1.08;
+            var base = P.sky, mid = P.glow, edge = P.disc, reach = p * 1.08;
             for (var y = 0; y < H; y++) {
                 var band = this.band[y] * 0.5, tone = this.tone[y] * 0.34, sh = this.shift[y], by = (y & 7) * 8;
                 for (var x = 0; x < W; x++) {
@@ -521,7 +521,7 @@
             for (x = 0; x < W; x++) {
                 var b = BAYER[(y & 7) * 8 + (x & 7)], hit = -1, color;
                 for (i = n - 1; i >= 0; i--) { if (y >= hs[i][x]) { hit = i; break; } }
-                if (foot) color = hit >= 0 && dens[hit] > b ? P.foot : P.sky;
+                if (foot) color = hit >= 0 && dens[hit] > b ? P.foot : 0;
                 else if (hit < 0) {
                     var dx = x - cx, dy = y - cy, d2 = dx * dx + dy * dy;
                     if (d2 < r2) {
@@ -551,10 +551,51 @@
         bands = bands.filter(function (band) { return band.canvas.isConnected; });
         bands.forEach(paintBand);
     }
+    var figure = { canvas: document.querySelector("[data-figure]"), image: null };
+
+    function paintFigure() {
+        var canvas = figure.canvas;
+        if (!canvas) return;
+        var img = figure.image;
+        if (!img) {
+            img = figure.image = new Image();
+            img.onload = paintFigure;
+            img.src = canvas.dataset.src;
+            return;
+        }
+        var cw = canvas.clientWidth, ch = canvas.clientHeight;
+        if (!img.naturalWidth || !cw || !ch) return;
+        var s = cw < 720 ? 2 : 3, W = Math.ceil(cw / s), H = Math.ceil(ch / s), P = pal();
+        canvas.width = W;
+        canvas.height = H;
+        var ctx = canvas.getContext("2d", { willReadFrequently: true });
+        var iw = Math.round(H * img.naturalWidth / img.naturalHeight), x0 = iw > W * 0.8 ? Math.round((W - iw) / 2) : Math.round(W * 0.94 - iw);
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, W, H);
+        ctx.drawImage(img, x0, 0, iw, H);
+        var data = ctx.getImageData(0, 0, W, H), px = data.data, out = new Uint32Array(px.buffer);
+        var ramp = [P.sky, P.ridges[4][1], P.ridges[3][1], P.ridges[2][1], P.ridges[1][1], P.ridges[0][1]];
+        var tone = [0.03, 0.7];
+        for (var y = 0; y < H; y++) {
+            var fy = clamp(y / H / 0.5, 0, 1);
+            for (var x = 0; x < W; x++) {
+                var o = (y * W + x) * 4, u = (x - x0) / iw;
+                var fx = clamp(u / 0.28, 0, 1) * clamp((1 - u) / 0.12, 0, 1);
+                var l = Math.pow(clamp(((px[o] * 0.299 + px[o + 1] * 0.587 + px[o + 2] * 0.114) / 255 - tone[0]) / (tone[1] - tone[0]), 0, 1), 0.9) * fx * fy * 4.6;
+                var base = Math.floor(l);
+                out[y * W + x] = ramp[Math.min(5, l - base > BAYER[(y & 7) * 8 + (x & 7)] ? base + 1 : base)];
+            }
+        }
+        ctx.putImageData(data, 0, 0);
+    }
+
     var bandTimer = 0;
     window.addEventListener("resize", function () {
         clearTimeout(bandTimer);
-        bandTimer = setTimeout(repaintBands, 120);
+        bandTimer = setTimeout(function () {
+            repaintBands();
+            paintFigure();
+        }, 120);
     });
 
     function ditherImage(fig) {
@@ -587,6 +628,8 @@
             fig.className = "dither";
             fig.title = "Show the original image";
             var canvas = document.createElement("canvas");
+            canvas.setAttribute("role", "img");
+            canvas.setAttribute("aria-label", img.alt || "");
             img.replaceWith(fig);
             fig.append(canvas, img);
             fig.addEventListener("click", function () {
@@ -675,13 +718,8 @@
         if (scene) { scene.stop(); scene = null; }
         var hero = view.querySelector("[data-hero]");
         if (hero) scene = new Scene(hero);
-        else if (view.querySelector(".page-head, .post-head, .lost")) {
-            var banner = document.createElement("canvas");
-            banner.className = "banner";
-            banner.setAttribute("aria-hidden", "true");
-            view.prepend(banner);
-            addBand(banner, seedOf(location.pathname), false);
-        }
+        var banner = view.querySelector("[data-banner]");
+        if (banner) addBand(banner, seedOf(location.pathname), false);
         setDays(view);
         setNav();
         setFilters();
@@ -801,6 +839,7 @@
             if (scene) scene.repaint();
             repaintBands();
             repaintImages();
+            paintFigure();
             view.classList.remove("is-tearing");
             veil.hush();
             veil.shuffle();
@@ -818,9 +857,16 @@
     var menuButton = document.querySelector("[data-menu-button]");
     var menuSky = null;
 
+    function setInert(on) {
+        view.inert = on;
+        var foot = document.querySelector(".foot");
+        if (foot) foot.inert = on;
+    }
+
     function closeMenu() {
         if (!menu || menu.hidden) return;
         menu.hidden = true;
+        setInert(false);
         root.classList.remove("menu-open");
         menuButton.setAttribute("aria-expanded", "false");
         menuButton.setAttribute("aria-label", "Open menu");
@@ -828,6 +874,7 @@
 
     function openMenu() {
         menu.hidden = false;
+        setInert(true);
         root.classList.add("menu-open");
         menuButton.setAttribute("aria-expanded", "true");
         menuButton.setAttribute("aria-label", "Close menu");
@@ -901,20 +948,37 @@
         scramble(a, a.textContent, 240);
     });
 
+    var keysOn = true;
+    try { keysOn = localStorage.getItem("mori-keys") !== "off"; } catch (e) {}
+    var keysButton = document.querySelector("[data-keys]");
+    function setKeysButton() {
+        if (keysButton) keysButton.textContent = keysOn ? "Turn keys off" : "Turn keys on";
+    }
+    if (keysButton) {
+        keysButton.addEventListener("click", function () {
+            keysOn = !keysOn;
+            try { localStorage.setItem("mori-keys", keysOn ? "on" : "off"); } catch (e) {}
+            setKeysButton();
+        });
+        setKeysButton();
+    }
+
     document.addEventListener("keydown", function (event) {
         if (event.metaKey || event.ctrlKey || event.altKey || busy) return;
         if (event.target.closest && event.target.closest("input, textarea, select, [contenteditable]")) return;
         var key = event.key.toLowerCase(), links = document.querySelectorAll("[data-nav]"), to = null;
+        if (key === "escape") { closeMenu(); return; }
+        if (!keysOn) return;
         if (key >= "1" && key <= "4") to = links[Number(key) - 1];
         else if (key === "h") to = document.querySelector(".mark");
         else if (key === "l") { setLayer(LAYERS[(LAYERS.indexOf(layer()) + 1) % LAYERS.length]); return; }
-        else if (key === "escape") { closeMenu(); return; }
         if (to && to.pathname !== location.pathname) go(to.href, true);
     });
 
     veil.setup();
     var skyline = document.querySelector("[data-skyline]");
     if (skyline) addBand(skyline, 4.2, true);
+    paintFigure();
     setDays(document);
     setLayerButton();
     initPage(false);

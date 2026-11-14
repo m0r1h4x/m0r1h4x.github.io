@@ -1,4 +1,5 @@
 <footer class="foot">
+  <canvas class="figure" data-figure data-src="{{ '/assets/img/figure.webp' | relative_url }}" aria-hidden="true"></canvas>
   <canvas class="skyline" data-skyline aria-hidden="true"></canvas>
   <div class="foot-in">
     <p class="foot-line"><span class="copy">©</span> {{ site.time | date: "%Y" }} mori. Built by <a href="https://github.com/saeeedhany" rel="noopener">saeed</a>.</p>
@@ -12,6 +13,6 @@
       {%- endfor %}
       <li><a href="{{ '/feed.xml' | relative_url }}" data-native>RSS</a></li>
     </ul>
-    <p class="foot-keys">Keys: <kbd>1</kbd> to <kbd>4</kbd> jump between pages, <kbd>H</kbd> goes home, <kbd>L</kbd> cycles the layer.</p>
+    <p class="foot-keys">Keys: <kbd>1</kbd> to <kbd>4</kbd> jump between pages, <kbd>H</kbd> goes home, <kbd>L</kbd> cycles the layer.<button type="button" data-keys>Turn keys off</button></p>
   </div>
 </footer>

@@ -4,7 +4,7 @@ layout: null
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 {%- assign docs = site.pages | concat: site.posts | concat: site.work %}
-{%- for d in docs %}{% if d.layout and d.url != "/404.html" %}
+{%- for d in docs %}{% assign ext = d.url | slice: -4, 4 %}{% if ext != ".xml" and ext != ".txt" and d.url != "/404.html" %}
   <url><loc>{{ d.url | absolute_url }}</loc></url>
 {%- endif %}{% endfor %}
 </urlset>
