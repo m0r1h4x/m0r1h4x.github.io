@@ -114,7 +114,51 @@
     var INK = { dusk: ["#b6af8e", "#e3a88e"], wired: ["#3f8fd4", "#e0eeff"], moss: ["#9fb08a", "#e8c98a"], ember: ["#d9a074", "#ffe9c4"] };
 
     function layer() { return PAL[root.dataset.layer] ? root.dataset.layer : "dusk"; }
-    function pal() { return PAL[layer()]; }
+    var RANKS = ["unranked", "bronze", "silver", "gold", "platinum", "diamond"];
+    var TINT = { unranked: 0.16, bronze: 0.3, silver: 0.28, gold: 0.34, platinum: 0.34, diamond: 0.38 };
+    var tiers = {}, lights = {}, tinted = {};
+
+    function rank() { return RANKS.indexOf(root.dataset.rank) > -1 ? root.dataset.rank : "unranked"; }
+    function tierHex(id) {
+        if (!tiers[id]) {
+            var hex = getComputedStyle(root).getPropertyValue("--tier-" + id).trim();
+            tiers[id] = /^#[0-9a-f]{6}$/i.test(hex) ? hex : "#9a958a";
+        }
+        return tiers[id];
+    }
+    function lightHex(id) {
+        if (!lights[id]) {
+            var n = parseInt(tierHex(id).slice(1), 16), out = "#";
+            [16, 8, 0].forEach(function (shift) {
+                var v = n >> shift & 255;
+                out += ("0" + Math.round(v + (255 - v) * 0.6).toString(16)).slice(-2);
+            });
+            lights[id] = out;
+        }
+        return lights[id];
+    }
+    function blend(a, b, k) {
+        var r = (a & 255) + ((b & 255) - (a & 255)) * k;
+        var g = (a >> 8 & 255) + ((b >> 8 & 255) - (a >> 8 & 255)) * k;
+        var u = (a >> 16 & 255) + ((b >> 16 & 255) - (a >> 16 & 255)) * k;
+        return (255 << 24 | u << 16 | g << 8 | r) >>> 0;
+    }
+    function pal() {
+        var key = layer() + rank();
+        if (!tinted[key]) {
+            var base = PAL[layer()], tone = pack(tierHex(rank())), k = TINT[rank()], out = {};
+            Object.keys(base).forEach(function (name) { out[name] = base[name]; });
+            out.glow = blend(base.glow, tone, k * 0.6);
+            out.disc = blend(base.disc, tone, k);
+            out.discShade = blend(base.discShade, tone, k * 0.7);
+            out.spark = blend(base.spark, tone, k);
+            out.hot = blend(base.hot, tone, k);
+            out.foot = blend(base.foot, tone, k * 0.5);
+            out.ridges = base.ridges.map(function (pair, i) { return i ? pair : [pair[0], blend(pair[1], tone, k * 0.6)]; });
+            tinted[key] = out;
+        }
+        return tinted[key];
+    }
 
     function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
     function sleep(ms) { return new Promise(function (done) { setTimeout(done, ms); }); }
@@ -271,7 +315,7 @@
         if (!this.fontReady) return;
         var ang = 1.05, cos = Math.cos(ang), sin = Math.sin(ang), narrow = this.narrow, x;
         g.save();
-        var ink = INK[layer()], cold = ink[0], warm = ink[1];
+        var ink = INK[layer()], cold = ink[0], warm = rank() === "unranked" ? ink[1] : tierHex(rank());
         var hotLane = Math.floor(t / 3.2) % this.lanes.length;
         g.font = fs + 'px "Departure Mono"';
         g.textBaseline = "middle";
@@ -492,6 +536,225 @@
             this.label.classList.remove("is-on");
         }
     };
+
+    var TAU = Math.PI * 2;
+    function frac(v) { return v - Math.floor(v); }
+    function dot(g, x, y, a, color, s) {
+        if (a <= 0.02) return;
+        g.globalAlpha = a > 1 ? 1 : a;
+        g.fillStyle = color;
+        g.fillRect(Math.round(x), Math.round(y), s || 1, s || 1);
+    }
+    function glint(g, x, y, a, color) {
+        dot(g, x, y, a, color);
+        dot(g, x - 1, y, a * 0.45, color);
+        dot(g, x + 1, y, a * 0.45, color);
+        dot(g, x, y - 1, a * 0.45, color);
+        dot(g, x, y + 1, a * 0.45, color);
+    }
+    function rim(u, W, H, m) {
+        var w = W - m * 2 - 1, h = H - m * 2 - 1, d = frac(u) * (w + h) * 2;
+        if (d < w) return [m + d, m];
+        d -= w;
+        if (d < h) return [m + w, m + d];
+        d -= h;
+        if (d < w) return [m + w - d, m + h];
+        return [m, m + h - (d - w)];
+    }
+
+    var AIR = {
+        unranked: function (g, W, H, t, c) {
+            for (var i = 0; i < 14; i++) {
+                var x = frac(hash(i) + t * 0.004 * (0.4 + hash(i + 20))) * W + Math.sin(t * 0.3 + i) * 3;
+                var y = frac(hash(i + 50) - t * 0.003 * (0.5 + hash(i + 70))) * H;
+                dot(g, x, y, 0.1 + 0.16 * (0.5 + 0.5 * Math.sin(t * (0.5 + hash(i + 9)) + i * 4)), c.tier);
+            }
+        },
+        bronze: function (g, W, H, t, c) {
+            var n = W < 260 ? 16 : 30;
+            for (var i = 0; i < n; i++) {
+                var p = frac(t * (0.05 + hash(i + 3) * 0.07) + hash(i + 11));
+                var x = hash(i) * W + Math.sin(p * 7 + i) * 5 + p * 10;
+                var y = H - p * H * (0.3 + hash(i + 31) * 0.55);
+                if (hash(i + Math.floor(t * 9) * 1.7) < 0.12) continue;
+                dot(g, x, y, Math.pow(1 - p, 1.4) * 0.85, p < 0.3 ? c.hot : c.tier, p < 0.12 && hash(i + 5) > 0.6 ? 2 : 1);
+            }
+        },
+        silver: function (g, W, H, t, c) {
+            var n = W < 260 ? 14 : 24;
+            for (var i = 0; i < n; i++) {
+                var p = frac(t * (0.018 + hash(i + 3) * 0.02) + hash(i + 11));
+                var y = p * (H + 8) - 4, x = frac(hash(i) + p * 0.12) * W + Math.sin(t * 0.4 + i) * 2;
+                var tw = Math.sin(t * (0.9 + hash(i + 7)) + i * 5);
+                if (tw > 0.9) glint(g, x, y, 0.75, c.hot);
+                else dot(g, x, y, 0.2 + 0.25 * (tw * 0.5 + 0.5), c.tier);
+            }
+        },
+        gold: function (g, W, H, t, c) {
+            var n = W < 260 ? 9 : 16;
+            for (var i = 0; i < n; i++) {
+                var x = hash(i) * W + (noise(t * 0.11 + i * 7.3) - 0.5) * W * 0.22;
+                var y = hash(i + 40) * H + (noise(t * 0.13 + i * 3.9 + 50) - 0.5) * H * 0.3;
+                var a = Math.max(0, Math.sin(t * (0.5 + hash(i + 8) * 0.7) + i * 3));
+                a *= a;
+                dot(g, x - 1, y - 1, a * 0.12, c.tier, 3);
+                dot(g, x, y, a * 0.9, a > 0.7 ? c.hot : c.tier);
+            }
+        },
+        platinum: function (g, W, H, t, c) {
+            var n = W < 260 ? 10 : 16;
+            for (var i = 0; i < n; i++) {
+                var p = frac(t * (0.015 + hash(i + 3) * 0.02) + hash(i + 11));
+                var tw = Math.sin(t * (1 + hash(i + 7)) + i * 5);
+                if (tw > 0.75) glint(g, hash(i) * W, H - p * H, 0.55 * (1 - p), c.tier);
+                else dot(g, hash(i) * W, H - p * H, 0.3 * (1 - p), c.tier);
+            }
+        },
+        diamond: function (g, W, H, t, c) {
+            var hues = [c.tier, tierHex("platinum"), tierHex("silver"), c.hot], i;
+            var n = W < 260 ? 12 : 22;
+            for (i = 0; i < n; i++) {
+                var beat = t * (0.25 + hash(i + 7) * 0.3) + hash(i + 2) * 9, tw = Math.sin(beat * TAU);
+                var seat = Math.floor(beat), x = hash(i + seat * 3.3) * W, y = hash(i * 1.9 + seat * 5.1) * H;
+                var color = hues[(i + seat) & 3];
+                if (tw > 0.55) glint(g, x, y, (tw - 0.55) * 1.9, color);
+                else if (tw > 0) dot(g, x, y, tw * 0.5, color);
+            }
+            var cycle = t / 6.5, p = frac(cycle) / 0.16, seed = Math.floor(cycle);
+            if (p < 1) {
+                var sx = (0.25 + hash(seed) * 0.75) * W, sy = hash(seed + 9) * H * 0.3, run = W * 0.3;
+                for (i = 0; i < 14; i++) {
+                    var q = p - i * 0.012;
+                    if (q < 0) break;
+                    dot(g, sx - q * run, sy + q * run * 0.45, (1 - i / 14) * (1 - p) * 0.9, i ? c.tier : c.hot);
+                }
+            }
+        }
+    };
+
+    var AURA = {
+        unranked: function (g, W, H, t, c) {
+            if (frac(t / 2.6) < 0.55) dot(g, 2, (H >> 1) - 1, 0.7, c.tier, 2);
+        },
+        bronze: function (g, W, H, t, c) {
+            for (var i = 0; i < 28; i++) {
+                var beat = t * (0.6 + hash(i + 3) * 0.7) + hash(i + 11), p = frac(beat);
+                var x = 5 + hash(i + Math.floor(beat) * 2.3) * (W - 11) + Math.sin(p * 5 + i) * 1.2;
+                var y = H - 4 - p * (H - 5) * (0.5 + hash(i + 21) * 0.5);
+                dot(g, x, y, (1 - p) * 0.95, p < 0.28 ? c.hot : c.tier);
+            }
+        },
+        silver: function (g, W, H, t, c) {
+            var i, at;
+            for (i = 0; i < 9; i++) {
+                at = rim(t * 0.16 - i / ((W + H - 10) * 2), W, H, 2);
+                if (i) dot(g, at[0], at[1], 0.7 - i * 0.08, c.tier);
+                else glint(g, at[0], at[1], 1, c.hot);
+            }
+            for (i = 0; i < 3; i++) {
+                var beat = t * 0.4 + i * 0.37, tw = Math.sin(frac(beat) * Math.PI), seat = Math.floor(beat);
+                if (tw > 0.5) glint(g, 2 + hash(i + seat * 2.7) * (W - 5), hash(i * 3 + seat) > 0.5 ? 2 : H - 3, (tw - 0.5) * 1.4, c.tier);
+            }
+        },
+        gold: function (g, W, H, t, c) {
+            var cx = (W - 1) / 2, cy = (H - 1) / 2, rx = W / 2 - 2, ry = H / 2 - 2;
+            for (var i = 0; i < 6; i++) {
+                var speed = 0.7 + hash(i + 4) * 0.5, a = t * speed + i * TAU / 6, wob = 1 + Math.sin(t * 0.8 + i * 2) * 0.08;
+                for (var k = 0; k < 4; k++) {
+                    var b = a - k * 0.11;
+                    dot(g, cx + Math.cos(b) * rx * wob, cy + Math.sin(b) * ry * wob, (0.9 - k * 0.24) * (0.55 + 0.45 * Math.sin(t * 2 + i)), k ? c.tier : c.hot);
+                }
+            }
+        },
+        platinum: function (g, W, H, t, c) {
+            for (var h = 0; h < 2; h++) {
+                for (var i = 0; i < 14; i++) {
+                    var at = rim(t * 0.3 + h * 0.5 - i / ((W + H - 10) * 2), W, H, 2);
+                    dot(g, at[0], at[1], 1 - i / 14, i < 2 ? c.hot : c.tier);
+                }
+            }
+        },
+        diamond: function (g, W, H, t, c) {
+            var hues = [c.tier, tierHex("platinum"), tierHex("silver"), c.hot];
+            var cx = (W - 1) / 2, cy = (H - 1) / 2, rx = W / 2 - 3, ry = H / 2 - 2;
+            for (var i = 0; i < 6; i++) {
+                var dir = i & 1 ? -1 : 1, a = t * 0.8 * dir + i * TAU / 6, lean = (i & 1 ? 0.35 : -0.35);
+                var x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry + Math.cos(a) * lean * ry;
+                y = clamp(y, 1, H - 2);
+                var tw = 0.5 + 0.5 * Math.sin(t * 3 + i * 1.7), color = hues[(i + Math.floor(t * 0.6)) & 3];
+                if (tw > 0.7) glint(g, x, y, tw, color);
+                else dot(g, x, y, 0.4 + tw * 0.5, color);
+            }
+        }
+    };
+
+    var air = {
+        page: document.querySelector("[data-air]"),
+        word: document.querySelector(".top .status-rank"),
+        on: false,
+        last: 0,
+        setup: function () {
+            if (this.page) this.pctx = this.page.getContext("2d");
+            if (this.word) {
+                this.ring = document.createElement("canvas");
+                this.ring.className = "aura";
+                this.ring.setAttribute("aria-hidden", "true");
+                this.word.append(this.ring);
+                this.rctx = this.ring.getContext("2d");
+            }
+            var self = this;
+            window.addEventListener("resize", function () { self.size(); });
+            document.addEventListener("visibilitychange", function () { self.kick(); });
+            document.fonts.ready.then(function () { self.size(); });
+            still.addEventListener("change", function () { self.size(); self.kick(); });
+            this.size();
+            this.kick();
+        },
+        size: function () {
+            if (this.page) {
+                var cell = window.innerWidth < 720 ? 2 : 3;
+                this.page.width = Math.max(1, Math.ceil(this.page.clientWidth / cell));
+                this.page.height = Math.max(1, Math.ceil(this.page.clientHeight / cell));
+            }
+            if (this.ring) {
+                this.ring.width = Math.max(1, Math.ceil(this.ring.clientWidth / 2));
+                this.ring.height = Math.max(1, Math.ceil(this.ring.clientHeight / 2));
+            }
+        },
+        kick: function () {
+            if (this.on || still.matches || document.hidden) return;
+            this.on = true;
+            requestAnimationFrame(this.frame);
+        },
+        frame: function (now) {
+            if (still.matches || document.hidden) { air.on = false; return; }
+            if (now - air.last > 33) {
+                air.last = now;
+                var t = now / 1000, id = rank(), c = { tier: tierHex(id), hot: lightHex(id) };
+                if (air.pctx) {
+                    air.pctx.clearRect(0, 0, air.page.width, air.page.height);
+                    AIR[id](air.pctx, air.page.width, air.page.height, t, c);
+                }
+                if (air.rctx) {
+                    air.rctx.clearRect(0, 0, air.ring.width, air.ring.height);
+                    AURA[id](air.rctx, air.ring.width, air.ring.height, t, c);
+                }
+            }
+            requestAnimationFrame(air.frame);
+        }
+    };
+
+    function setRankPreview(scope) {
+        if (!root.dataset.rankPreview) return;
+        var id = rank();
+        scope.querySelectorAll(".status, .menu-status, .readout, .totals").forEach(function (el) {
+            RANKS.forEach(function (r) { el.classList.remove("tier-" + r); });
+            el.classList.add("tier-" + id);
+        });
+        scope.querySelectorAll(".status-rank, .readout-rank").forEach(function (el) {
+            if (el.firstChild && el.firstChild.nodeType === 3) el.firstChild.nodeValue = id;
+        });
+    }
 
     function seedOf(text) {
         var n = 0;
@@ -721,6 +984,7 @@
         var banner = view.querySelector("[data-banner]");
         if (banner) addBand(banner, seedOf(location.pathname), false);
         setDays(view);
+        setRankPreview(view);
         setNav();
         setFilters();
         setImages();
@@ -980,6 +1244,8 @@
     if (skyline) addBand(skyline, 4.2, true);
     paintFigure();
     setDays(document);
+    setRankPreview(document);
+    air.setup();
     setLayerButton();
     initPage(false);
     boot();

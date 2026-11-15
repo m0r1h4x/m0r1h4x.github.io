@@ -1,11 +1,13 @@
+{%- include rank/compute.html -%}
 <!doctype html>
-<html lang="{{ site.lang }}">
+<html lang="{{ site.lang }}" data-rank="{{ rank_current.id }}">
 <head>
 {% include head.html %}
 </head>
 <body>
 {% include header.html %}
 <div class="progress" data-progress aria-hidden="true"></div>
+<canvas class="air" data-air aria-hidden="true"></canvas>
 <main id="view" tabindex="-1" data-path="{{ page.url }}">
 {{ content }}
 </main>

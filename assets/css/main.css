@@ -8,14 +8,14 @@
 :root {
     --bg: #1b1b1e;
     --bg-2: #242327;
-    --line: #38363c;
+    --l-line: #38363c;
     --dim: #948e82;
     --text: #d6cfae;
     --strong: #eee8cb;
-    --plum: #5b3a5e;
+    --l-plum: #5b3a5e;
     --plum-hi: #a585a6;
     --sage: #a3b59a;
-    --hot: #e3a88e;
+    --l-hot: #e3a88e;
     --tier-unranked: #9a958a;
     --tier-bronze: #c98a5e;
     --tier-silver: #c9cdc4;
@@ -39,28 +39,28 @@
 :root[data-layer="moss"] {
     --bg: #121512;
     --bg-2: #1a1f1a;
-    --line: #2e392e;
+    --l-line: #2e392e;
     --dim: #8c987f;
     --text: #cfd6b4;
     --strong: #eef0d2;
-    --plum: #2f4a34;
+    --l-plum: #2f4a34;
     --plum-hi: #8fb996;
     --sage: #b9c79a;
-    --hot: #e8c98a;
+    --l-hot: #e8c98a;
     --veil-bg: #1a1210;
     --veil-ink: #fff0d6;
 }
 :root[data-layer="ember"] {
     --bg: #1a1210;
     --bg-2: #241916;
-    --line: #402b24;
+    --l-line: #402b24;
     --dim: #a58c7a;
     --text: #ecd2b0;
     --strong: #fff0d6;
-    --plum: #6b2f22;
+    --l-plum: #6b2f22;
     --plum-hi: #e08a58;
     --sage: #f0b878;
-    --hot: #ffb070;
+    --l-hot: #ffb070;
     --veil-bg: #121512;
     --veil-ink: #eef0d2;
 }
@@ -69,14 +69,14 @@
     --veil-ink: #eee8cb;
     --bg: #030a14;
     --bg-2: #071628;
-    --line: #113457;
+    --l-line: #113457;
     --dim: #6493bd;
     --text: #a9cdf0;
     --strong: #e0eeff;
-    --plum: #0e3a66;
+    --l-plum: #0e3a66;
     --plum-hi: #3f8fd4;
     --sage: #4ea3ea;
-    --hot: #9fd0ff;
+    --l-hot: #9fd0ff;
 }
 
 .tier-unranked { --tier: var(--tier-unranked); }
@@ -85,6 +85,62 @@
 .tier-gold { --tier: var(--tier-gold); }
 .tier-platinum { --tier: var(--tier-platinum); }
 .tier-diamond { --tier: var(--tier-diamond); }
+
+:root {
+    --hot: var(--l-hot);
+    --line: var(--l-line);
+    --plum: var(--l-plum);
+    --aura: var(--tier-unranked);
+    --tint-hot: 16%;
+    --tint-line: 0%;
+    --tint-plum: 30%;
+    --wash: none;
+    --edge: none;
+}
+@supports (color: color-mix(in oklab, red, blue)) {
+    :root {
+        --hot: color-mix(in oklab, var(--l-hot), var(--aura) var(--tint-hot));
+        --line: color-mix(in oklab, var(--l-line), var(--aura) var(--tint-line));
+        --plum: color-mix(in oklab, var(--l-plum), var(--aura) var(--tint-plum));
+        --haze: color-mix(in oklab, var(--aura) 3%, transparent);
+        --wash: linear-gradient(to top, var(--haze), transparent 46%);
+    }
+}
+:root[data-rank="bronze"] {
+    --aura: var(--tier-bronze);
+    --tint-hot: 34%;
+    --tint-line: 16%;
+    --tint-plum: 30%;
+    --edge: linear-gradient(90deg, transparent 50%, var(--aura));
+}
+:root[data-rank="silver"] {
+    --aura: var(--tier-silver);
+    --tint-hot: 30%;
+    --tint-line: 22%;
+    --tint-plum: 38%;
+    --edge: repeating-linear-gradient(90deg, var(--aura) 0 2px, transparent 2px 8px);
+}
+:root[data-rank="gold"] {
+    --aura: var(--tier-gold);
+    --tint-hot: 40%;
+    --tint-line: 14%;
+    --tint-plum: 26%;
+    --edge: linear-gradient(90deg, transparent, var(--aura) 30%, var(--aura) 70%, transparent);
+}
+:root[data-rank="platinum"] {
+    --aura: var(--tier-platinum);
+    --tint-hot: 36%;
+    --tint-line: 20%;
+    --tint-plum: 38%;
+    --edge: linear-gradient(90deg, transparent, var(--aura), transparent) 0 0 / 50% 100%;
+}
+:root[data-rank="diamond"] {
+    --aura: var(--tier-diamond);
+    --tint-hot: 40%;
+    --tint-line: 20%;
+    --tint-plum: 42%;
+    --edge: linear-gradient(90deg, var(--tier-diamond), var(--tier-platinum), var(--tier-silver), var(--tier-diamond)) 0 0 / 200% 100%;
+}
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -200,7 +256,41 @@ main:focus { outline: none; }
     color: var(--dim);
     white-space: nowrap;
 }
-.status-rank { color: var(--tier); }
+.status-rank { position: relative; isolation: isolate; color: var(--tier); }
+.aura {
+    position: absolute;
+    left: -12px;
+    top: -10px;
+    z-index: -1;
+    width: calc(100% + 24px);
+    height: calc(100% + 20px);
+    pointer-events: none;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+.top::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: var(--edge);
+    pointer-events: none;
+}
+:root[data-rank="platinum"] .top::after { animation: edge-sweep 9s linear infinite alternate; background-repeat: no-repeat; }
+:root[data-rank="diamond"] .top::after { animation: edge-flow 14s linear infinite; }
+.air {
+    position: fixed;
+    inset: var(--top) 0 0 0;
+    z-index: 30;
+    width: 100%;
+    height: calc(100% - var(--top));
+    pointer-events: none;
+    background: var(--wash);
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
 .status:hover { color: var(--strong); }
 
 .layers { display: flex; gap: 6px; }
@@ -997,6 +1087,8 @@ main { flex: 1; }
     to { clip-path: inset(0); }
 }
 @keyframes blink { 50% { opacity: 0; } }
+@keyframes edge-sweep { from { background-position: -50% 0; } to { background-position: 150% 0; } }
+@keyframes edge-flow { to { background-position: -200% 0; } }
 @keyframes unveil { to { visibility: hidden; } }
 
 @media (max-width: 860px) {
